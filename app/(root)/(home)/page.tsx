@@ -1,15 +1,27 @@
 import MeetingTypeList from "@/components/MeetingTypeList";
+import { currentUser } from "@clerk/nextjs/server";
+import { tokenProvider } from "@/actions/stream.actions";
 
-const Home = () => {
+const Home = async () => {
   const now = new Date();
+  const user = await currentUser();
 
   const time = now.toLocaleTimeString("en-US", {
     hour: "2-digit",
     minute: "2-digit",
+    timeZone: "Asia/Kolkata", // Replace with your timezone
   });
-  const date = new Intl.DateTimeFormat("en-US", { dateStyle: "full" }).format(
-    now
-  );
+
+  const date = new Intl.DateTimeFormat("en-US", {
+    dateStyle: "full",
+    timeZone: "Asia/Kolkata", // Replace with your timezone
+  }).format(now);
+
+  // Generate token only if user exists
+  let token = "";
+  if (user) {
+    token = await tokenProvider(user.id);
+  }
 
   return (
     <section className="flex size-full flex-col gap-5 text-white">
@@ -25,7 +37,7 @@ const Home = () => {
         </div>
       </div>
 
-      <MeetingTypeList />
+      <MeetingTypeList token={token} />
     </section>
   );
 };
